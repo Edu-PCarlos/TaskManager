@@ -1,0 +1,68 @@
+
+services:
+  # API Gateway
+  api-gateway:
+    build: ./backend/api-gateway
+    ports:
+      - "8000:8000"
+    environment:
+      - TASKS_SERVICE_URL=http://tasks-service:8001
+      - USERS_SERVICE_URL=http://users-service:8002
+      - NOTIFICATIONS_SERVICE_URL=http://notifications-service:8003
+    depends_on:
+      - tasks-service
+      - users-service
+      - notifications-service
+    networks:
+      - app-network
+
+  # Tasks Service
+  tasks-service:
+    build: ./backend/tasks-service
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./backend/tasks-service/data:/app/data
+    networks:
+      - app-network
+
+  # Users Service  
+  users-service:
+    build: ./backend/users-service
+    ports:
+      - "8002:8002"
+    volumes:
+      - ./backend/users-service/data:/app/data
+    networks:
+      - app-network
+
+  # Notifications Service
+  notifications-service:
+    build: ./backend/notifications-service
+    ports:
+      - "8003:8003"
+    volumes:
+      - ./backend/notifications-service/data:/app/data
+    networks:
+      - app-network
+
+  # Frontend
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - VITE_API_URL=http://localhost:8000
+    depends_on:
+      - api-gateway
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  tasks-data:
+  users-data:
+  notifications-data:
